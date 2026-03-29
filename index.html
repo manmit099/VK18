@@ -228,9 +228,7 @@
           autoplay
           preload="auto"
           playsinline
-          controlslist="nodownload"
         >
-          <source id="modal-src" src="" type="video/mp4">
         </video>
       </div>
 
@@ -322,7 +320,6 @@
   // ── Modal logic ──
   const modal      = document.getElementById('modal');
   const modalVideo = document.getElementById('modal-video');
-  const modalSrc   = document.getElementById('modal-src');
   const titleText  = document.getElementById('modal-title-text');
   const filename   = document.getElementById('modal-filename');
   const dlBtn      = document.getElementById('download-btn');
@@ -331,10 +328,10 @@
   function openModal(name) {
     const src = name + '.mp4';
 
-    // Update video source
-    modalSrc.src = src;
+    // Set src directly on <video> — most reliable for dynamic switching
+    modalVideo.src = src;
     modalVideo.load();
-    modalVideo.play();
+    modalVideo.play().catch(() => {});
 
     // Update labels & download link
     titleText.textContent = src;
@@ -354,7 +351,7 @@
   function closeModal() {
     modal.classList.remove('open');
     modalVideo.pause();
-    modalSrc.src = '';
+    modalVideo.src = '';
     modalVideo.load();
     document.body.style.overflow = '';
   }
@@ -374,3 +371,4 @@
 
 </body>
 </html>
+
