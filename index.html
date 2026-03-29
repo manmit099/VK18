@@ -12,7 +12,7 @@
     body {
       background: #000;
       min-height: 100vh;
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-family: 'JetBrains Mono', monospace;
       color: #d4d4d4;
       padding: 32px 28px;
     }
@@ -26,194 +26,364 @@
       user-select: none;
     }
 
-    /* ── Native HTML Accordion (Folders) ── */
-    details {
-      margin-bottom: 8px;
-    }
-    
-    summary {
+    .folder-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
+      gap: 6px;
+      padding: 4px 6px;
       cursor: pointer;
       user-select: none;
-      border-radius: 4px;
-      background: #111;
-      font-size: 14px;
-      font-weight: 500;
-      color: #ccc;
-      list-style: none; /* Hide default arrow */
-      transition: background 0.2s;
+      border-radius: 3px;
+      transition: background .12s;
     }
-    
-    summary:hover { background: #1a1a1a; }
-    summary::-webkit-details-marker { display: none; } /* Hide Safari arrow */
+    .folder-row:hover { background: #111; }
 
-    /* Custom arrow for details tag */
-    summary::before {
-      content: '▶';
-      font-size: 10px;
+    .arrow {
+      width: 14px; height: 14px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
       color: #555;
-      transition: transform 0.2s;
+      transition: transform .18s ease;
+      transform: rotate(-90deg);
     }
-    details[open] > summary::before {
-      transform: rotate(90deg);
+    .arrow.open { transform: rotate(0deg); }
+
+    .f-icon { width: 16px; height: 16px; flex-shrink: 0; display: block; }
+
+    .row-name {
+      font-size: 13px;
+      color: #ccc;
     }
 
-    /* ── Video Grid ── */
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 20px;
-      padding: 16px 12px 24px 28px;
+    .children {
+      display: none;
+      padding-left: 34px;
       border-left: 1px solid #1a1a1a;
-      margin-left: 16px;
+      margin-left: 13px;
     }
+    .children.open { display: block; }
 
-    .video-card {
-      background: #0d0d0d;
-      border: 1px solid #1e1e1e;
-      border-radius: 8px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    }
-
-    .video-header {
+    .file-row {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
-      background: #111;
-      border-bottom: 1px solid #1a1a1a;
-      font-size: 12px;
-      color: #888;
+      gap: 6px;
+      padding: 3px 6px;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: background .12s;
+    }
+    .file-row:hover { background: #111; }
+    .file-row .row-name { font-size: 12.5px; color: #777; }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.88);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal.open { display: flex; }
+
+    .modal-card {
+      background: #0d0d0d;
+      border: 1px solid #1e1e1e;
+      border-radius: 12px;
+      box-shadow: 0 0 60px rgba(204,0,0,.2);
+      width: 100%;
+      max-width: 360px;
+      overflow: hidden;
     }
 
-    .video-player {
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid #1a1a1a;
+      background: #111;
+    }
+    .modal-title {
+      font-size: 11px;
+      color: #555;
+      letter-spacing: .1em;
+    }
+    .close-btn {
+      width: 22px; height: 22px;
+      display: flex; align-items: center; justify-content: center;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      color: #555;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background .12s, color .12s;
+    }
+    .close-btn:hover { background: #cc0000; color: #fff; }
+
+    .modal-video-wrap {
       width: 100%;
       aspect-ratio: 9 / 16;
       background: #000;
+    }
+    .modal-video-wrap video {
+      width: 100%;
+      height: 100%;
       object-fit: contain;
+      background: #000;
+      display: block;
     }
 
-    .video-footer {
-      padding: 10px 12px;
+    .modal-footer {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      background: #0d0d0d;
+      justify-content: space-between;
+      padding: 10px 14px;
       border-top: 1px solid #1a1a1a;
+      background: #0d0d0d;
     }
-
+    .modal-file {
+      font-size: 10px;
+      color: #333;
+    }
     .download-btn {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 12px;
+      padding: 7px 14px;
       background: #cc0000;
       color: #fff;
       border-radius: 4px;
-      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
       text-decoration: none;
-      transition: background 0.15s;
+      transition: background .15s;
     }
-    
-    .download-btn:hover { 
-      background: #e60000; 
-    }
-    
-    .empty-folder {
-      padding: 12px 28px;
-      color: #555;
-      font-size: 12px;
-      border-left: 1px solid #1a1a1a;
-      margin-left: 16px;
-    }
+    .download-btn:hover { background: #e60000; }
   </style>
 </head>
 <body>
 
-  <div class="section-label">Virat Kohli Sixes</div>
+<div class="section-label">Virat Kohli Sixes</div>
 
-  <details open>
-    <summary>📁 Rcb Vs Srh</summary>
-    <div class="video-grid">
-      
-      <div class="video-card">
-        <div class="video-header">🎥 1RcbVsSrh.mp4</div>
-        <video class="video-player" controls playsinline preload="metadata">
-          <source src="1RcbVsSrh.mp4" type="video/mp4">
-        </video>
-        <div class="video-footer">
-          <a class="download-btn" href="1RcbVsSrh.mp4" download>⬇ Download</a>
-        </div>
-      </div>
+<!-- ── Folder: Rcb Vs Srh ── -->
+<div>
+  <div class="folder-row" onclick="toggleFolder('srh', this)">
+    <span class="arrow" id="arr-srh">
+      <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" stroke-width="1.7"><polyline points="1.5,3 4.5,6 7.5,3"/></svg>
+    </span>
+    <svg class="f-icon" id="ficon-srh" viewBox="0 0 16 16"><path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h3.086a1.5 1.5 0 0 1 1.06.44l.915.914A1.5 1.5 0 0 0 8.62 3.5H13.5A1.5 1.5 0 0 1 15 5v7.5A1.5 1.5 0 0 1 13.5 14h-11A1.5 1.5 0 0 1 1 12.5V3.5z" fill="#c8901a"/></svg>
+    <span class="row-name">Rcb Vs Srh</span>
+  </div>
+  <div class="children" id="ch-srh">
 
-      <div class="video-card">
-        <div class="video-header">🎥 2RcbVsSrh.mp4</div>
-        <video class="video-player" controls playsinline preload="metadata">
-          <source src="2RcbVsSrh.mp4" type="video/mp4">
-        </video>
-        <div class="video-footer">
-          <a class="download-btn" href="2RcbVsSrh.mp4" download>⬇ Download</a>
-        </div>
-      </div>
-
-      <div class="video-card">
-        <div class="video-header">🎥 3RcbVsSrh.mp4</div>
-        <video class="video-player" controls playsinline preload="metadata">
-          <source src="3RcbVsSrh.mp4" type="video/mp4">
-        </video>
-        <div class="video-footer">
-          <a class="download-btn" href="3RcbVsSrh.mp4" download>⬇ Download</a>
-        </div>
-      </div>
-
-      <div class="video-card">
-        <div class="video-header">🎥 4RcbVsSrh.mp4</div>
-        <video class="video-player" controls playsinline preload="metadata">
-          <source src="4RcbVsSrh.mp4" type="video/mp4">
-        </video>
-        <div class="video-footer">
-          <a class="download-btn" href="4RcbVsSrh.mp4" download>⬇ Download</a>
-        </div>
-      </div>
-
-      <div class="video-card">
-        <div class="video-header">🎥 5RcbVsSrh.mp4</div>
-        <video class="video-player" controls playsinline preload="metadata">
-          <source src="5RcbVsSrh.mp4" type="video/mp4">
-        </video>
-        <div class="video-footer">
-          <a class="download-btn" href="5RcbVsSrh.mp4" download>⬇ Download</a>
-        </div>
-      </div>
-
+    <div class="file-row" onclick="document.getElementById('modal1').classList.add('open')">
+      <svg class="f-icon" viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="1.5" fill="#cc0000" opacity=".9"/><polygon points="6,6 11,8 6,10" fill="white"/></svg>
+      <span class="row-name">1RcbVsSrh.mp4</span>
     </div>
-  </details>
 
-  <details>
-    <summary>📁 Rcb Vs Csk</summary>
-    <div class="empty-folder">No videos yet...</div>
-  </details>
+    <div class="file-row" onclick="document.getElementById('modal2').classList.add('open')">
+      <svg class="f-icon" viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="1.5" fill="#cc0000" opacity=".9"/><polygon points="6,6 11,8 6,10" fill="white"/></svg>
+      <span class="row-name">2RcbVsSrh.mp4</span>
+    </div>
 
-  <details>
-    <summary>📁 Rcb Vs Mi</summary>
-    <div class="empty-folder">No videos yet...</div>
-  </details>
+    <div class="file-row" onclick="document.getElementById('modal3').classList.add('open')">
+      <svg class="f-icon" viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="1.5" fill="#cc0000" opacity=".9"/><polygon points="6,6 11,8 6,10" fill="white"/></svg>
+      <span class="row-name">3RcbVsSrh.mp4</span>
+    </div>
 
-  <details>
-    <summary>📁 Rcb Vs Pbks</summary>
-    <div class="empty-folder">No videos yet...</div>
-  </details>
+    <div class="file-row" onclick="document.getElementById('modal4').classList.add('open')">
+      <svg class="f-icon" viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="1.5" fill="#cc0000" opacity=".9"/><polygon points="6,6 11,8 6,10" fill="white"/></svg>
+      <span class="row-name">4RcbVsSrh.mp4</span>
+    </div>
 
-  <details>
-    <summary>📁 Rcb Vs Lsg</summary>
-    <div class="empty-folder">No videos yet...</div>
-  </details>
+    <div class="file-row" onclick="document.getElementById('modal5').classList.add('open')">
+      <svg class="f-icon" viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" rx="1.5" fill="#cc0000" opacity=".9"/><polygon points="6,6 11,8 6,10" fill="white"/></svg>
+      <span class="row-name">5RcbVsSrh.mp4</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Other folders ── -->
+<div>
+  <div class="folder-row" onclick="toggleFolder('csk', this)">
+    <span class="arrow" id="arr-csk"><svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" stroke-width="1.7"><polyline points="1.5,3 4.5,6 7.5,3"/></svg></span>
+    <svg class="f-icon" viewBox="0 0 16 16"><path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h3.086a1.5 1.5 0 0 1 1.06.44l.915.914A1.5 1.5 0 0 0 8.62 3.5H13.5A1.5 1.5 0 0 1 15 5v7.5A1.5 1.5 0 0 1 13.5 14h-11A1.5 1.5 0 0 1 1 12.5V3.5z" fill="#c8901a"/></svg>
+    <span class="row-name">Rcb Vs Csk</span>
+  </div>
+  <div class="children" id="ch-csk"></div>
+</div>
+
+<div>
+  <div class="folder-row" onclick="toggleFolder('mi', this)">
+    <span class="arrow" id="arr-mi"><svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" stroke-width="1.7"><polyline points="1.5,3 4.5,6 7.5,3"/></svg></span>
+    <svg class="f-icon" viewBox="0 0 16 16"><path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h3.086a1.5 1.5 0 0 1 1.06.44l.915.914A1.5 1.5 0 0 0 8.62 3.5H13.5A1.5 1.5 0 0 1 15 5v7.5A1.5 1.5 0 0 1 13.5 14h-11A1.5 1.5 0 0 1 1 12.5V3.5z" fill="#c8901a"/></svg>
+    <span class="row-name">Rcb Vs Mi</span>
+  </div>
+  <div class="children" id="ch-mi"></div>
+</div>
+
+<div>
+  <div class="folder-row" onclick="toggleFolder('pbks', this)">
+    <span class="arrow" id="arr-pbks"><svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" stroke-width="1.7"><polyline points="1.5,3 4.5,6 7.5,3"/></svg></span>
+    <svg class="f-icon" viewBox="0 0 16 16"><path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h3.086a1.5 1.5 0 0 1 1.06.44l.915.914A1.5 1.5 0 0 0 8.62 3.5H13.5A1.5 1.5 0 0 1 15 5v7.5A1.5 1.5 0 0 1 13.5 14h-11A1.5 1.5 0 0 1 1 12.5V3.5z" fill="#c8901a"/></svg>
+    <span class="row-name">Rcb Vs Pbks</span>
+  </div>
+  <div class="children" id="ch-pbks"></div>
+</div>
+
+<div>
+  <div class="folder-row" onclick="toggleFolder('lsg', this)">
+    <span class="arrow" id="arr-lsg"><svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" stroke-width="1.7"><polyline points="1.5,3 4.5,6 7.5,3"/></svg></span>
+    <svg class="f-icon" viewBox="0 0 16 16"><path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h3.086a1.5 1.5 0 0 1 1.06.44l.915.914A1.5 1.5 0 0 0 8.62 3.5H13.5A1.5 1.5 0 0 1 15 5v7.5A1.5 1.5 0 0 1 13.5 14h-11A1.5 1.5 0 0 1 1 12.5V3.5z" fill="#c8901a"/></svg>
+    <span class="row-name">Rcb Vs Lsg</span>
+  </div>
+  <div class="children" id="ch-lsg"></div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     VIDEO MODALS — hardcoded src each one
+     ══════════════════════════════════════ -->
+
+<!-- Modal 1 -->
+<div class="modal" id="modal1" onclick="if(event.target===this)closeModal('modal1')">
+  <div class="modal-card">
+    <div class="modal-header">
+      <span class="modal-title">1RcbVsSrh.mp4</span>
+      <div class="close-btn" onclick="closeModal('modal1')">✕</div>
+    </div>
+    <div class="modal-video-wrap">
+      <video controls playsinline>
+        <source src="1RcbVsSrh.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="modal-footer">
+      <span class="modal-file">1RcbVsSrh.mp4</span>
+      <a class="download-btn" href="1RcbVsSrh.mp4" download="1RcbVsSrh.mp4">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 2 -->
+<div class="modal" id="modal2" onclick="if(event.target===this)closeModal('modal2')">
+  <div class="modal-card">
+    <div class="modal-header">
+      <span class="modal-title">2RcbVsSrh.mp4</span>
+      <div class="close-btn" onclick="closeModal('modal2')">✕</div>
+    </div>
+    <div class="modal-video-wrap">
+      <video controls playsinline>
+        <source src="2RcbVsSrh.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="modal-footer">
+      <span class="modal-file">2RcbVsSrh.mp4</span>
+      <a class="download-btn" href="2RcbVsSrh.mp4" download="2RcbVsSrh.mp4">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 3 -->
+<div class="modal" id="modal3" onclick="if(event.target===this)closeModal('modal3')">
+  <div class="modal-card">
+    <div class="modal-header">
+      <span class="modal-title">3RcbVsSrh.mp4</span>
+      <div class="close-btn" onclick="closeModal('modal3')">✕</div>
+    </div>
+    <div class="modal-video-wrap">
+      <video controls playsinline>
+        <source src="3RcbVsSrh.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="modal-footer">
+      <span class="modal-file">3RcbVsSrh.mp4</span>
+      <a class="download-btn" href="3RcbVsSrh.mp4" download="3RcbVsSrh.mp4">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 4 -->
+<div class="modal" id="modal4" onclick="if(event.target===this)closeModal('modal4')">
+  <div class="modal-card">
+    <div class="modal-header">
+      <span class="modal-title">4RcbVsSrh.mp4</span>
+      <div class="close-btn" onclick="closeModal('modal4')">✕</div>
+    </div>
+    <div class="modal-video-wrap">
+      <video controls playsinline>
+        <source src="4RcbVsSrh.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="modal-footer">
+      <span class="modal-file">4RcbVsSrh.mp4</span>
+      <a class="download-btn" href="4RcbVsSrh.mp4" download="4RcbVsSrh.mp4">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 5 -->
+<div class="modal" id="modal5" onclick="if(event.target===this)closeModal('modal5')">
+  <div class="modal-card">
+    <div class="modal-header">
+      <span class="modal-title">5RcbVsSrh.mp4</span>
+      <div class="close-btn" onclick="closeModal('modal5')">✕</div>
+    </div>
+    <div class="modal-video-wrap">
+      <video controls playsinline>
+        <source src="5RcbVsSrh.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="modal-footer">
+      <span class="modal-file">5RcbVsSrh.mp4</span>
+      <a class="download-btn" href="5RcbVsSrh.mp4" download="5RcbVsSrh.mp4">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </a>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  function toggleFolder(id, row) {
+    const ch  = document.getElementById('ch-' + id);
+    const arr = document.getElementById('arr-' + id);
+    const isOpen = ch.classList.toggle('open');
+    arr.classList.toggle('open', isOpen);
+  }
+
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.remove('open');
+    // Pause the video inside
+    const vid = modal.querySelector('video');
+    if (vid) { vid.pause(); vid.currentTime = 0; }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal.open').forEach(m => closeModal(m.id));
+    }
+  });
+</script>
 
 </body>
 </html>
