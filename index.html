@@ -78,34 +78,128 @@
     .file-row .row-name { font-size: 12.5px; color: #777; }
     .file-row.active { background: #1a0000; border-left: 2px solid #cc0000; padding-left: 4px; }
 
-    /* Video player */
-    #player-wrap {
+    /* ── Modal overlay ── */
+    #modal {
       display: none;
-      margin-top: 24px;
-      padding: 0 6px;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn .18s ease;
     }
-    #player-wrap.visible { display: block; }
+    #modal.open { display: flex; }
 
-    #player-title {
-      font-size: 10px;
-      color: #444;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ── Modal card ── */
+    .modal-card {
+      background: #0d0d0d;
+      border: 1px solid #1e1e1e;
+      border-radius: 12px;
+      box-shadow: 0 0 60px rgba(204, 0, 0, 0.2), 0 24px 60px rgba(0,0,0,0.8);
+      width: 100%;
+      max-width: 360px;
+      overflow: hidden;
+      animation: slideUp .2s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    /* Header bar */
+    .modal-header {
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid #1a1a1a;
+      background: #111;
     }
+    .modal-title {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      color: #555;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .close-btn {
+      width: 22px; height: 22px;
+      display: flex; align-items: center; justify-content: center;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      color: #555;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      transition: background .12s, color .12s;
+    }
+    .close-btn:hover { background: #cc0000; color: #fff; border-color: #cc0000; }
 
-    #player-wrap video {
+    /* Video — 9:16 portrait */
+    .modal-video-wrap {
       width: 100%;
-      max-width: 520px;
-      border-radius: 6px;
-      border: 1px solid #1c1c1c;
-      box-shadow: 0 0 24px rgba(204,0,0,.15);
+      aspect-ratio: 9 / 16;
+      background: #000;
+      position: relative;
+    }
+    .modal-video-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
       background: #000;
       display: block;
     }
+
+    /* Footer */
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-top: 1px solid #1a1a1a;
+      background: #0d0d0d;
+      gap: 10px;
+    }
+    .modal-filename {
+      font-size: 10px;
+      color: #333;
+      letter-spacing: .06em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .download-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: #cc0000;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .08em;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background .15s;
+      flex-shrink: 0;
+    }
+    .download-btn:hover { background: #e60000; }
   </style>
 </head>
 <body>
@@ -113,17 +207,45 @@
   <div class="section-label">Virat Kohli Sixes</div>
   <div id="tree"></div>
 
-  <div id="player-wrap">
-    <div id="player-title">
-      <svg width="12" height="12" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-        <rect x="1" y="3" width="14" height="10" rx="1.5" fill="#cc0000" opacity=".9"/>
-        <polygon points="6,6 11,8 6,10" fill="white"/>
-      </svg>
-      <span id="player-filename"></span>
+  <!-- ── Modal popup ── -->
+  <div id="modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg width="12" height="12" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="3" width="14" height="10" rx="1.5" fill="#cc0000" opacity=".9"/>
+            <polygon points="6,6 11,8 6,10" fill="white"/>
+          </svg>
+          <span id="modal-title-text"></span>
+        </div>
+        <div class="close-btn" id="close-btn" title="Close">✕</div>
+      </div>
+
+      <div class="modal-video-wrap">
+        <video
+          id="modal-video"
+          controls
+          autoplay
+          preload="auto"
+          playsinline
+          controlslist="nodownload"
+        >
+          <source id="modal-src" src="" type="video/mp4">
+        </video>
+      </div>
+
+      <div class="modal-footer">
+        <span class="modal-filename" id="modal-filename"></span>
+        <a class="download-btn" id="download-btn" href="" download="">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Download
+        </a>
+      </div>
     </div>
-    <video id="video-player" controls autoplay preload="metadata">
-      <source id="video-src" src="" type="video/mp4">
-    </video>
   </div>
 
 <script>
@@ -152,8 +274,8 @@
       <polyline points="1.5,3 4.5,6 7.5,3"/>
     </svg>`;
 
+  // ── Build tree ──
   const tree = document.getElementById('tree');
-
   folders.forEach(folder => {
     let open = false;
     const wrap = document.createElement('div');
@@ -172,9 +294,7 @@
     label.className = 'row-name';
     label.textContent = folder.name;
 
-    row.appendChild(arrow);
-    row.appendChild(icon);
-    row.appendChild(label);
+    row.appendChild(arrow); row.appendChild(icon); row.appendChild(label);
 
     const children = document.createElement('div');
     children.className = 'children';
@@ -183,7 +303,7 @@
       const file = document.createElement('div');
       file.className = 'file-row';
       file.innerHTML = `${videoSVG()}<span class="row-name">${v}.mp4</span>`;
-      file.addEventListener('click', () => playVideo(v));
+      file.addEventListener('click', () => openModal(v));
       children.appendChild(file);
     });
 
@@ -199,123 +319,58 @@
     tree.appendChild(wrap);
   });
 
-  async function playVideo(name) {
-    // Highlight active file row
+  // ── Modal logic ──
+  const modal      = document.getElementById('modal');
+  const modalVideo = document.getElementById('modal-video');
+  const modalSrc   = document.getElementById('modal-src');
+  const titleText  = document.getElementById('modal-title-text');
+  const filename   = document.getElementById('modal-filename');
+  const dlBtn      = document.getElementById('download-btn');
+  const closeBtn   = document.getElementById('close-btn');
+
+  function openModal(name) {
+    const src = name + '.mp4';
+
+    // Update video source
+    modalSrc.src = src;
+    modalVideo.load();
+    modalVideo.play();
+
+    // Update labels & download link
+    titleText.textContent = src;
+    filename.textContent  = src;
+    dlBtn.href            = src;
+    dlBtn.download        = src;
+
+    // Highlight active row
     document.querySelectorAll('.file-row').forEach(r => {
-      const label = r.querySelector('.row-name');
-      r.classList.toggle('active', label && label.textContent === name + '.mp4');
+      r.classList.toggle('active', r.querySelector('.row-name').textContent === src);
     });
 
-    // Fetch the video as a blob so the new tab can actually load and download it
-    let videoObjectUrl;
-    try {
-      const response = await fetch(name + '.mp4');
-      if (!response.ok) throw new Error('fetch failed');
-      const videoBlob = await response.blob();
-      videoObjectUrl = URL.createObjectURL(videoBlob);
-    } catch (e) {
-      alert('Could not load ' + name + '.mp4 — make sure the file is in the same folder as this HTML.');
-      return;
-    }
-
-    const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>${name}.mp4</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #000;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-family: 'JetBrains Mono', monospace;
-      padding: 28px 16px;
-      gap: 16px;
-    }
-    .label {
-      font-size: 11px;
-      color: #444;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .label svg { flex-shrink: 0; }
-    .video-wrap {
-      width: 100%;
-      max-width: 340px;
-      aspect-ratio: 9 / 16;
-      background: #0a0a0a;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid #1c1c1c;
-      box-shadow: 0 0 40px rgba(204,0,0,.18);
-    }
-    .video-wrap video {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: #000;
-      display: block;
-    }
-    .download-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 24px;
-      background: #cc0000;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      letter-spacing: .08em;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background .15s;
-    }
-    .download-btn:hover { background: #e60000; }
-  </style>
-</head>
-<body>
-  <div class="label">
-    <svg width="13" height="13" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-      <rect x="1" y="3" width="14" height="10" rx="1.5" fill="#cc0000" opacity=".9"/>
-      <polygon points="6,6 11,8 6,10" fill="white"/>
-    </svg>
-    ${name}.mp4
-  </div>
-
-  <div class="video-wrap">
-    <video controls autoplay>
-      <source src="${videoObjectUrl}" type="video/mp4">
-    </video>
-  </div>
-
-  <a class="download-btn" href="${videoObjectUrl}" download="${name}.mp4">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-      <polyline points="7 10 12 15 17 10"/>
-      <line x1="12" y1="15" x2="12" y2="3"/>
-    </svg>
-    Download Video
-  </a>
-</body>
-</html>`;
-
-    const pageBlob = new Blob([html], { type: 'text/html' });
-    const pageUrl = URL.createObjectURL(pageBlob);
-    window.open(pageUrl, '_blank');
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
+
+  function closeModal() {
+    modal.classList.remove('open');
+    modalVideo.pause();
+    modalSrc.src = '';
+    modalVideo.load();
+    document.body.style.overflow = '';
+  }
+
+  closeBtn.addEventListener('click', closeModal);
+
+  // Click backdrop to close
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  // Esc key to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+  });
 </script>
 
 </body>
 </html>
-
