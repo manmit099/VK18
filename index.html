@@ -199,15 +199,24 @@
     tree.appendChild(wrap);
   });
 
-  function playVideo(name) {
+  async function playVideo(name) {
+    // Highlight active file row
     document.querySelectorAll('.file-row').forEach(r => {
       const label = r.querySelector('.row-name');
       r.classList.toggle('active', label && label.textContent === name + '.mp4');
     });
 
-    // Build absolute URL so the blob tab can resolve the mp4 next to this HTML file
-    const base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-    const videoUrl = base + name + '.mp4';
+    // Fetch the video as a blob so the new tab can actually load and download it
+    let videoObjectUrl;
+    try {
+      const response = await fetch(name + '.mp4');
+      if (!response.ok) throw new Error('fetch failed');
+      const videoBlob = await response.blob();
+      videoObjectUrl = URL.createObjectURL(videoBlob);
+    } catch (e) {
+      alert('Could not load ' + name + '.mp4 — make sure the file is in the same folder as this HTML.');
+      return;
+    }
 
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -285,12 +294,12 @@
   </div>
 
   <div class="video-wrap">
-    <video controls autoplay preload="metadata">
-      <source src="${videoUrl}" type="video/mp4">
+    <video controls autoplay>
+      <source src="${videoObjectUrl}" type="video/mp4">
     </video>
   </div>
 
-  <a class="download-btn" href="${videoUrl}" download="${name}.mp4">
+  <a class="download-btn" href="${videoObjectUrl}" download="${name}.mp4">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
       <polyline points="7 10 12 15 17 10"/>
@@ -301,9 +310,9 @@
 </body>
 </html>`;
 
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    const pageBlob = new Blob([html], { type: 'text/html' });
+    const pageUrl = URL.createObjectURL(pageBlob);
+    window.open(pageUrl, '_blank');
   }
 </script>
 
