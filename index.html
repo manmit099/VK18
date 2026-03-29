@@ -207,7 +207,6 @@
   <div class="section-label">Virat Kohli Sixes</div>
   <div id="tree"></div>
 
-  <!-- ── Modal popup ── -->
   <div id="modal">
     <div class="modal-card">
       <div class="modal-header">
@@ -222,15 +221,7 @@
       </div>
 
       <div class="modal-video-wrap">
-        <video
-          id="modal-video"
-          controls
-          autoplay
-          preload="auto"
-          playsinline
-        >
-        </video>
-      </div>
+        </div>
 
       <div class="modal-footer">
         <span class="modal-filename" id="modal-filename"></span>
@@ -319,7 +310,6 @@
 
   // ── Modal logic ──
   const modal      = document.getElementById('modal');
-  const modalVideo = document.getElementById('modal-video');
   const titleText  = document.getElementById('modal-title-text');
   const filename   = document.getElementById('modal-filename');
   const dlBtn      = document.getElementById('download-btn');
@@ -330,16 +320,26 @@
 
     // Destroy old video and create a fresh one every time
     const wrap = document.querySelector('.modal-video-wrap');
-    wrap.innerHTML = '';
+    wrap.innerHTML = ''; // Clear previous video
+    
     const vid = document.createElement('video');
     vid.id = 'modal-video';
     vid.controls = true;
     vid.autoplay = true;
-    vid.playsinline = true;
+    vid.playsInline = true; // Fixed proper JS property casing
     vid.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000;display:block;';
-    vid.src = src;
+    
+    // Explicitly add the source element
+    const sourceEl = document.createElement('source');
+    sourceEl.src = src;
+    sourceEl.type = 'video/mp4';
+    vid.appendChild(sourceEl);
+
     wrap.appendChild(vid);
-    vid.play().catch(() => {});
+    
+    // Force the browser to load the new source
+    vid.load();
+    vid.play().catch((err) => console.error("Video playback failed:", err));
 
     // Update labels & download link
     titleText.textContent = src;
@@ -359,7 +359,7 @@
   function closeModal() {
     modal.classList.remove('open');
     const wrap = document.querySelector('.modal-video-wrap');
-    wrap.innerHTML = '';
+    wrap.innerHTML = ''; // Stop video playback on close
     document.body.style.overflow = '';
   }
 
@@ -378,3 +378,4 @@
 
 </body>
 </html>
+
