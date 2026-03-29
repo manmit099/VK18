@@ -26,7 +26,6 @@
       user-select: none;
     }
 
-    /* Folder row */
     .folder-row {
       display: flex;
       align-items: center;
@@ -39,23 +38,15 @@
     }
     .folder-row:hover { background: #111; }
 
-    /* Down arrow — rotates to right when closed */
     .arrow {
-      width: 14px;
-      height: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 14px; height: 14px;
+      display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
       color: #555;
       transition: transform .18s ease;
-      /* default = pointing right (collapsed) */
       transform: rotate(-90deg);
     }
-    .arrow.open {
-      /* pointing down (expanded) */
-      transform: rotate(0deg);
-    }
+    .arrow.open { transform: rotate(0deg); }
 
     .f-icon { width: 16px; height: 16px; flex-shrink: 0; display: block; }
 
@@ -65,7 +56,6 @@
       letter-spacing: .01em;
     }
 
-    /* Children */
     .children {
       display: none;
       padding-left: 34px;
@@ -74,7 +64,6 @@
     }
     .children.open { display: block; }
 
-    /* File row */
     .file-row {
       display: flex;
       align-items: center;
@@ -87,6 +76,36 @@
     }
     .file-row:hover { background: #111; }
     .file-row .row-name { font-size: 12.5px; color: #777; }
+    .file-row.active { background: #1a0000; border-left: 2px solid #cc0000; padding-left: 4px; }
+
+    /* Video player */
+    #player-wrap {
+      display: none;
+      margin-top: 24px;
+      padding: 0 6px;
+    }
+    #player-wrap.visible { display: block; }
+
+    #player-title {
+      font-size: 10px;
+      color: #444;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #player-wrap video {
+      width: 100%;
+      max-width: 520px;
+      border-radius: 6px;
+      border: 1px solid #1c1c1c;
+      box-shadow: 0 0 24px rgba(204,0,0,.15);
+      background: #000;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -94,17 +113,26 @@
   <div class="section-label">Virat Kohli Sixes</div>
   <div id="tree"></div>
 
+  <div id="player-wrap">
+    <div id="player-title">
+      <svg width="12" height="12" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="3" width="14" height="10" rx="1.5" fill="#cc0000" opacity=".9"/>
+        <polygon points="6,6 11,8 6,10" fill="white"/>
+      </svg>
+      <span id="player-filename"></span>
+    </div>
+    <video id="video-player" controls autoplay preload="metadata">
+      <source id="video-src" src="" type="video/mp4">
+    </video>
+  </div>
+
 <script>
   const folders = [
-    {
-      name: 'Rcb Vs Srh',
-      id: 'srh',
-      videos: ['1RcbVsSrh','2RcbVsSrh','3RcbVsSrh','4RcbVsSrh','5RcbVsSrh']
-    },
-    { name: 'Rcb Vs Csk', id: 'csk', videos: [] },
-    { name: 'Rcb Vs Mi',  id: 'mi',  videos: [] },
-    { name: 'Rcb Vs Pbks',id: 'pbks',videos: [] },
-    { name: 'Rcb Vs Lsg', id: 'lsg', videos: [] },
+    { name: 'Rcb Vs Srh',  videos: ['1RcbVsSrh','2RcbVsSrh','3RcbVsSrh','4RcbVsSrh','5RcbVsSrh'] },
+    { name: 'Rcb Vs Csk',  videos: [] },
+    { name: 'Rcb Vs Mi',   videos: [] },
+    { name: 'Rcb Vs Pbks', videos: [] },
+    { name: 'Rcb Vs Lsg',  videos: [] },
   ];
 
   const folderSVG = (open) => `
@@ -119,7 +147,7 @@
       <polygon points="6,6 11,8 6,10" fill="white"/>
     </svg>`;
 
-  const downArrowSVG = () => `
+  const arrowSVG = () => `
     <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" stroke-width="1.7">
       <polyline points="1.5,3 4.5,6 7.5,3"/>
     </svg>`;
@@ -130,13 +158,12 @@
     let open = false;
     const wrap = document.createElement('div');
 
-    /* — Folder row — */
     const row = document.createElement('div');
     row.className = 'folder-row';
 
     const arrow = document.createElement('span');
-    arrow.className = 'arrow'; // starts rotated -90deg = pointing right
-    arrow.innerHTML = downArrowSVG();
+    arrow.className = 'arrow';
+    arrow.innerHTML = arrowSVG();
 
     const icon = document.createElement('span');
     icon.innerHTML = folderSVG(false);
@@ -149,7 +176,6 @@
     row.appendChild(icon);
     row.appendChild(label);
 
-    /* — Children — */
     const children = document.createElement('div');
     children.className = 'children';
 
@@ -157,10 +183,10 @@
       const file = document.createElement('div');
       file.className = 'file-row';
       file.innerHTML = `${videoSVG()}<span class="row-name">${v}.mp4</span>`;
+      file.addEventListener('click', () => playVideo(v));
       children.appendChild(file);
     });
 
-    /* — Toggle — */
     row.addEventListener('click', () => {
       open = !open;
       arrow.classList.toggle('open', open);
@@ -172,6 +198,109 @@
     wrap.appendChild(children);
     tree.appendChild(wrap);
   });
+
+  function playVideo(name) {
+    document.querySelectorAll('.file-row').forEach(r => {
+      const label = r.querySelector('.row-name');
+      r.classList.toggle('active', label && label.textContent === name + '.mp4');
+    });
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>${name}.mp4</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #000;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 28px 16px;
+      gap: 16px;
+    }
+    .label {
+      font-size: 11px;
+      color: #444;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .label svg { flex-shrink: 0; }
+    .video-wrap {
+      width: 100%;
+      max-width: 340px;
+      aspect-ratio: 9 / 16;
+      background: #0a0a0a;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #1c1c1c;
+      box-shadow: 0 0 40px rgba(204,0,0,.18);
+    }
+    .video-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+      display: block;
+    }
+    .download-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 24px;
+      background: #cc0000;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: .08em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .download-btn:hover { background: #e60000; }
+  </style>
+</head>
+<body>
+  <div class="label">
+    <svg width="13" height="13" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="3" width="14" height="10" rx="1.5" fill="#cc0000" opacity=".9"/>
+      <polygon points="6,6 11,8 6,10" fill="white"/>
+    </svg>
+    ${name}.mp4
+  </div>
+
+  <div class="video-wrap">
+    <video controls autoplay preload="metadata">
+      <source src="${name}.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <a class="download-btn" href="${name}.mp4" download="${name}.mp4">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/>
+      <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+    Download Video
+  </a>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  }
 </script>
 
 </body>
