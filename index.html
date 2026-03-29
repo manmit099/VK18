@@ -328,10 +328,18 @@
   function openModal(name) {
     const src = name + '.mp4';
 
-    // Set src directly on <video> — most reliable for dynamic switching
-    modalVideo.src = src;
-    modalVideo.load();
-    modalVideo.play().catch(() => {});
+    // Destroy old video and create a fresh one every time
+    const wrap = document.querySelector('.modal-video-wrap');
+    wrap.innerHTML = '';
+    const vid = document.createElement('video');
+    vid.id = 'modal-video';
+    vid.controls = true;
+    vid.autoplay = true;
+    vid.playsinline = true;
+    vid.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000;display:block;';
+    vid.src = src;
+    wrap.appendChild(vid);
+    vid.play().catch(() => {});
 
     // Update labels & download link
     titleText.textContent = src;
@@ -350,9 +358,8 @@
 
   function closeModal() {
     modal.classList.remove('open');
-    modalVideo.pause();
-    modalVideo.src = '';
-    modalVideo.load();
+    const wrap = document.querySelector('.modal-video-wrap');
+    wrap.innerHTML = '';
     document.body.style.overflow = '';
   }
 
@@ -371,4 +378,3 @@
 
 </body>
 </html>
-
